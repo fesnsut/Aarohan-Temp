@@ -1,0 +1,68 @@
+# .gitignore for Trading Engine
+
+# Build directories
+build/
+cmake-build-*/
+*.o
+*.a
+*.so
+*.dylib
+
+# Compiled binaries
+trading_engine
+api_server
+*.exe
+*.out
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Docker
+.dockerignore
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Redis dumps
+dump.rdb
+appendonly.aof
+
+# Configuration (may contain secrets)
+config/*.local.json
+*.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Node modules (if any)
+node_modules/
+
+# Dependencies
+third_party/
+!third_party/.gitkeep

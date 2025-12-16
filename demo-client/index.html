@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Engine - Demo Client</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 30px;
+        }
+        
+        .panel {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .panel h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .market-data {
+            max-height: 400px;
+            overflow-y: auto;
+            background: white;
+            border-radius: 5px;
+            padding: 15px;
+        }
+        
+        .market-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #e9ecef;
+            align-items: center;
+        }
+        
+        .symbol {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 1.1em;
+        }
+        
+        .price {
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        
+        .price.up {
+            color: #28a745;
+        }
+        
+        .price.down {
+            color: #dc3545;
+        }
+        
+        .spread {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+        
+        .log {
+            max-height: 300px;
+            overflow-y: auto;
+            background: #212529;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Mock Trading Engine</h1>
+            <p>High-Performance Stock Exchange Simulation</p>
+        </div>
+        
+        <div class="content">
+            <!-- Order Entry Panel -->
+            <div class="panel">
+                <h2>📝 Place Order</h2>
+                <div id="connection-status" class="status disconnected">
+                    ⚠️ Disconnected from server
+                </div>
+                
+                <div class="form-group">
+                    <label>User ID</label>
+                    <input type="number" id="userId" value="1" min="1" max="10">
+                </div>
+                
+                <div class="form-group">
+                    <label>Symbol</label>
+                    <select id="symbol">
+                        <option value="AAPL">AAPL - Apple Inc.</option>
+                        <option value="GOOGL">GOOGL - Alphabet Inc.</option>
+                        <option value="MSFT">MSFT - Microsoft</option>
+                        <option value="AMZN">AMZN - Amazon</option>
+                        <option value="TSLA">TSLA - Tesla</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Side</label>
+                    <select id="side">
+                        <option value="BUY">BUY</option>
+                        <option value="SELL">SELL</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Order Type</label>
+                    <select id="orderType">
+                        <option value="LIMIT">LIMIT</option>
+                        <option value="MARKET">MARKET</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Time In Force</label>
+                    <select id="timeInForce">
+                        <option value="GFD">GFD (Good For Day)</option>
+                        <option value="IOC">IOC (Immediate Or Cancel)</option>
+                        <option value="FOK">FOK (Fill Or Kill)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Price ($)</label>
+                    <input type="number" id="price" value="150.00" step="0.01" min="0">
+                </div>
+                
+                <div class="form-group">
+                    <label>Quantity</label>
+                    <input type="number" id="quantity" value="10" min="1">
+                </div>
+                
+                <button onclick="placeOrder()">Place Order</button>
+            </div>
+            
+            <!-- Market Data Panel -->
+            <div class="panel">
+                <h2>📊 Live Market Data</h2>
+                <div id="market-data" class="market-data">
+                    <p style="text-align: center; color: #6c757d;">Waiting for market data...</p>
+                </div>
+            </div>
+            
+            <!-- Statistics Panel -->
+            <div class="panel full-width">
+                <h2>📈 Statistics</h2>
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalOrders">0</div>
+                        <div class="stat-label">Total Orders</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalTrades">0</div>
+                        <div class="stat-label">Total Trades</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalVolume">0</div>
+                        <div class="stat-label">Total Volume</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="avgPrice">$0.00</div>
+                        <div class="stat-label">Avg Trade Price</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Activity Log Panel -->
+            <div class="panel full-width">
+                <h2>📜 Activity Log</h2>
+                <div id="activity-log" class="log"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_URL = 'http://localhost:8080';
+        const WS_URL = 'ws://localhost:8765/ws/all';
+        
+        let ws = null;
+        let marketData = {};
+        let stats = {
+            totalOrders: 0,
+            totalTrades: 0,
+            totalVolume: 0,
+            totalValue: 0
+        };
+        
+        // Connect to WebSocket
+        function connectWebSocket() {
+            ws = new WebSocket(WS_URL);
+            
+            ws.onopen = () => {
+                log('Connected to WebSocket server', 'success');
+                updateConnectionStatus(true);
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                handleWebSocketMessage(data);
+            };
+            
+            ws.onclose = () => {
+                log('Disconnected from WebSocket server', 'error');
+                updateConnectionStatus(false);
+                setTimeout(connectWebSocket, 3000);
+            };
+            
+            ws.onerror = (error) => {
+                log('WebSocket error: ' + error, 'error');
+            };
+        }
+        
+        function handleWebSocketMessage(data) {
+            if (data.type === 'tick') {
+                updateMarketData(data);
+            } else if (data.type === 'trade') {
+                handleTrade(data);
+            } else if (data.type === 'order') {
+                handleOrderUpdate(data);
+            } else if (data.type === 'connection') {
+                log(data.message, 'info');
+            }
+        }
+        
+        function updateMarketData(tick) {
+            marketData[tick.symbol] = tick;
+            renderMarketData();
+        }
+        
+        function renderMarketData() {
+            const container = document.getElementById('market-data');
+            container.innerHTML = '';
+            
+            for (const [symbol, data] of Object.entries(marketData)) {
+                const item = document.createElement('div');
+                item.className = 'market-item';
+                item.innerHTML = `
+                    <div>
+                        <div class="symbol">${symbol}</div>
+                        <div class="spread">Bid: $${data.bidPrice.toFixed(2)} | Ask: $${data.askPrice.toFixed(2)}</div>
+                    </div>
+                    <div>
+                        <div class="price">${data.lastTradePrice.toFixed(2)}</div>
+                        <div class="spread">Vol: ${data.lastTradeQuantity}</div>
+                    </div>
+                `;
+                container.appendChild(item);
+            }
+        }
+        
+        function handleTrade(trade) {
+            stats.totalTrades++;
+            stats.totalVolume += trade.quantity;
+            stats.totalValue += trade.price * trade.quantity;
+            updateStats();
+            log(`Trade executed: ${trade.symbol} @ $${trade.price.toFixed(2)} x ${trade.quantity}`, 'trade');
+        }
+        
+        function handleOrderUpdate(order) {
+            stats.totalOrders++;
+            updateStats();
+            log(`Order ${order.orderId}: ${order.status} - ${order.symbol} ${order.side} ${order.quantity}@$${order.price.toFixed(2)}`, 'order');
+        }
+        
+        function updateStats() {
+            document.getElementById('totalOrders').textContent = stats.totalOrders;
+            document.getElementById('totalTrades').textContent = stats.totalTrades;
+            document.getElementById('totalVolume').textContent = stats.totalVolume;
+            const avgPrice = stats.totalTrades > 0 ? stats.totalValue / stats.totalVolume : 0;
+            document.getElementById('avgPrice').textContent = '$' + avgPrice.toFixed(2);
+        }
+        
+        function updateConnectionStatus(connected) {
+            const statusEl = document.getElementById('connection-status');
+            if (connected) {
+                statusEl.className = 'status connected';
+                statusEl.textContent = '✅ Connected to server';
+            } else {
+                statusEl.className = 'status disconnected';
+                statusEl.textContent = '⚠️ Disconnected from server';
+            }
+        }
+        
+        async function placeOrder() {
+            const order = {
+                userId: parseInt(document.getElementById('userId').value),
+                symbol: document.getElementById('symbol').value,
+                side: document.getElementById('side').value,
+                type: document.getElementById('orderType').value,
+                timeInForce: document.getElementById('timeInForce').value,
+                price: parseFloat(document.getElementById('price').value),
+                quantity: parseInt(document.getElementById('quantity').value)
+            };
+            
+            try {
+                const response = await fetch(`${API_URL}/order/place`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(order)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    log(`Order placed successfully: ${order.symbol} ${order.side} ${order.quantity}@$${order.price}`, 'success');
+                } else {
+                    log(`Order failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                log(`Error placing order: ${error.message}`, 'error');
+            }
+        }
+        
+        function log(message, type = 'info') {
+            const logEl = document.getElementById('activity-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            
+            let prefix = '';
+            switch(type) {
+                case 'success': prefix = '✅'; break;
+                case 'error': prefix = '❌'; break;
+                case 'trade': prefix = '💰'; break;
+                case 'order': prefix = '📋'; break;
+                default: prefix = 'ℹ️';
+            }
+            
+            entry.textContent = `[${timestamp}] ${prefix} ${message}`;
+            logEl.insertBefore(entry, logEl.firstChild);
+            
+            // Keep only last 100 entries
+            while (logEl.children.length > 100) {
+                logEl.removeChild(logEl.lastChild);
+            }
+        }
+        
+        // Initialize
+        connectWebSocket();
+        
+        // Update price field when order type changes
+        document.getElementById('orderType').addEventListener('change', (e) => {
+            document.getElementById('price').disabled = e.target.value === 'MARKET';
+        });
+    </script>
+</body>
+</html>

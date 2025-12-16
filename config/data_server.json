@@ -1,0 +1,18 @@
+{
+  "redis": {
+    "host": "localhost",
+    "port": 6379,
+    "password": ""
+  },
+  "channels": {
+    "marketData": "market_data",
+    "trade": "trades"
+  },
+  "symbols": [
+    "AAPL", "GOOGL", "MSFT", "AMZN", "TSLA",
+    "FB", "NFLX", "NVDA", "AMD", "INTC",
+    "BABA", "ORCL", "IBM", "CSCO", "ADBE"
+  ],
+  "volatility": 0.02,
+  "updateInterval": 1.0
+}
