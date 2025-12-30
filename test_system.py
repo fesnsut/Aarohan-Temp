@@ -17,10 +17,10 @@ def print_header(text):
     print("="*60)
 
 def print_success(text):
-    print(f"✓ {text}")
+    print(f"[PASS] {text}")
 
 def print_error(text):
-    print(f"✗ {text}")
+    print(f"[FAIL] {text}")
 
 def test_health_check():
     """Test API server health"""
@@ -264,13 +264,13 @@ def run_all_tests():
     
     for name, result in results:
         status = "PASS" if result else "FAIL"
-        symbol = "✓" if result else "✗"
+        symbol = "[PASS]" if result else "[FAIL]"
         print(f"{symbol} {name}: {status}")
     
     print(f"\nResults: {passed}/{total} tests passed")
     
     if passed == total:
-        print_success("All tests passed! 🎉")
+        print_success("All tests passed!")
         return 0
     else:
         print_error(f"{total - passed} test(s) failed")
